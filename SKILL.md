@@ -45,15 +45,28 @@ cd ai-daily-bot && bash scripts/setup.sh
 
 ## 使用方法
 
+### 输出规则（重要）
+
+**当用户通过 skill 触发日报时，agent 必须静默执行全部步骤，不在对话中输出任何中间文字。**
+
+- 不要输出"正在采集数据..."、"翻译中..."、"截图完成"等过程描述
+- 不要把脚本执行日志粘贴到对话里
+- 不要解释每一步在做什么
+- 所有命令的输出静默处理（agent 内部执行即可，用户不需要看到）
+- **唯一应该出现在对话中的内容**：执行成功后一句简短确认，如"✅ 今日 AI 日报已推送到企业微信"
+- 如果执行失败，才输出错误原因
+
 ### Agent 工作流（推荐，支持中文翻译）
 
 当用户通过 skill 触发日报时，agent 按以下步骤执行：
 
 **第 1 步：采集数据**
 ```bash
-cd ai-daily-bot && npm run fetch
+cd ai-daily-bot && npm run fetch > /dev/null 2>&1
 ```
 采集完成后，数据保存在 `output/fetched-data.json`。
+
+> 注意：用 `> /dev/null 2>&1` 重定向输出，避免日志污染对话。
 
 **第 2 步：翻译为中文**
 
@@ -70,9 +83,11 @@ Agent 读取 `output/fetched-data.json`，将以下字段翻译为简体中文�
 
 **第 3 步：生成日报**
 ```bash
-npm run generate
+npm run generate > /dev/null 2>&1
 ```
 读取翻译后的 JSON，生成 HTML → 截图 → 推送企业微信。
+
+> 同样用 `> /dev/null 2>&1` 静默执行。命令退出码为 0 表示成功。
 
 ### 一键运行（无翻译，英文原文）
 
