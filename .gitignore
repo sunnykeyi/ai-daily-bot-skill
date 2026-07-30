@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+output/
+public/*.html
+*.png
+*.jpg
+
+# AI-Daily 上游仓库（由 scripts/setup.sh 重新克隆）
+ai-daily/

@@ -1,0 +1,27 @@
+{
+  "name": "ai-daily-bot",
+  "version": "1.0.0",
+  "description": "AI Daily 自动化日报工作流：信息采集 → HTML 生成 → 网页截图 → 企业微信推送",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "daily": "tsx src/index.ts",
+    "setup": "bash scripts/setup.sh",
+    "screenshot": "tsx src/screenshot.ts",
+    "serve": "tsx src/server.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "playwright": "^1.48.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.9.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
