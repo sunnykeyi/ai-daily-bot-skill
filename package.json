@@ -9,6 +9,8 @@
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
     "daily": "tsx src/index.ts",
+    "fetch": "tsx src/fetch-only.ts",
+    "generate": "tsx src/generate-only.ts",
     "setup": "bash scripts/setup.sh",
     "screenshot": "tsx src/screenshot.ts",
     "serve": "tsx src/server.ts"

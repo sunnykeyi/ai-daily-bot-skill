@@ -45,17 +45,41 @@ cd ai-daily-bot && bash scripts/setup.sh
 
 ## 使用方法
 
-### 一键运行
+### Agent 工作流（推荐，支持中文翻译）
+
+当用户通过 skill 触发日报时，agent 按以下步骤执行：
+
+**第 1 步：采集数据**
+```bash
+cd ai-daily-bot && npm run fetch
+```
+采集完成后，数据保存在 `output/fetched-data.json`。
+
+**第 2 步：翻译为中文**
+
+Agent 读取 `output/fetched-data.json`，将以下字段翻译为简体中文：
+- `news[].title` 和 `news[].summary`
+- `youtube[].title`
+- `xPosts[].content`
+
+翻译要求：
+- 保持原意，语言自然流畅
+- AI/科技专有名词保留英文（如 GPT、LLM、Claude、OpenAI、Anthropic 等）
+- 不翻译 URL、代码、人名
+- **保持 JSON 结构完全不变**，只替换文本内容，覆盖写回同一文件
+
+**第 3 步：生成日报**
+```bash
+npm run generate
+```
+读取翻译后的 JSON，生成 HTML → 截图 → 推送企业微信。
+
+### 一键运行（无翻译，英文原文）
 
 ```bash
 cd ai-daily-bot && npm run daily
 ```
-
-或使用 Shell 脚本：
-
-```bash
-bash ai-daily-bot/scripts/run-daily.sh
-```
+跳过翻译步骤，直接用英文原文生成日报。适合定时自动化场景。
 
 ### 工作流步骤
 
@@ -66,11 +90,17 @@ bash ai-daily-bot/scripts/run-daily.sh
    - `fetch_youtube.py`：抓取 10 个 AI 相关 YouTube 频道的最新视频
    - `fetch_x.py`：抓取 18 个 X.com AI 账号的热门帖子
 
-2. **HTML 生成（serve）** — 将抓取数据填入 Rationalist/Modernism 杂志风格模板，生成双语 HTML 日报，保存到 `public/` 目录
+2. **翻译（translate）** — **由 Claude agent 完成，非后端脚本**：
+   - 抓取到的内容为英文，agent 需将标题、摘要、YouTube 标题、X 帖子内容翻译为简体中文
+   - 翻译时保持原意、AI/科技专有名词保留英文（如 GPT、LLM、Claude、OpenAI）
+   - 翻译后的中文数据填入 HTML 模板的 `*_CN` 字段，英文原文填入 `*_EN` 字段
+   - 模板支持中英双语切换，因此两套数据都需要
 
-3. **网页截图（screenshot）** — 启动本地 Express 服务器托管 HTML，使用 Playwright 无头浏览器进行 2x 高清全页截图，保存到 `output/` 目录
+3. **HTML 生成（serve）** — 将抓取数据（EN）+ 翻译数据（CN）填入 Rationalist/Modernism 杂志风格模板，生成双语 HTML 日报，保存到 `public/` 目录
 
-4. **企业微信推送（send）** — 通过 Webhook 将截图以图片消息发送到企业微信群聊。如果图片发送失败，自动回退为文本通知
+4. **网页截图（screenshot）** — 启动本地 Express 服务器托管 HTML，使用 Playwright 无头浏览器进行 2x 高清全页截图，保存到 `output/` 目录
+
+5. **企业微信推送（send）** — 通过 Webhook 将截图以图片消息发送到企业微信群聊。如果图片发送失败，自动回退为文本通知
 
 ### 单独运行某个阶段
 

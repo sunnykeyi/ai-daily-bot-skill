@@ -5,6 +5,9 @@
  * 用法：
  *   npx tsx src/index.ts              # 使用 .env 配置运行
  *   WECHAT_WEBHOOK_URL=... npx tsx src/index.ts  # 指定 webhook
+ *
+ * 注意：此命令跳过翻译步骤，使用英文原文生成日报。
+ * 如需中文翻译，请用 agent 工作流：npm run fetch → 翻译 → npm run generate
  */
 import { config } from 'dotenv';
 import path from 'path';
@@ -156,6 +159,7 @@ async function run(): Promise<void> {
   try {
     htmlFilename = generateDailyHTML(
       fetchedData,
+      fetchedData, // 翻译后的数据（若未翻译则和原文相同）
       fullConfig.style,
       fullConfig.publicDir,
       fullConfig.aiDailyDir
@@ -193,12 +197,9 @@ async function run(): Promise<void> {
     const baseUrl = await server.start();
 
     const url = `${baseUrl}/${htmlFilename}`;
-    const dateStr = new Date()
-      .toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })
-      .replace(/\//g, '-');
     screenshotPath = path.join(
       fullConfig.outputDir,
-      `daily-screenshot-${dateStr}.png`
+      `daily-screenshot-${dateStr()}.png`
     );
 
     await captureFullPage({
@@ -296,8 +297,15 @@ async function run(): Promise<void> {
   saveResults(results);
 }
 
+/** 获取日期字符串 */
+function dateStr(): string {
+  return new Date()
+    .toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai' })
+    .replace(/\//g, '-');
+}
+
 /**
- * 保存执行结果到 JSON 日志
+ * 保存执行结果到 JSON 日志（本地兜底，每次覆盖）
  */
 function saveResults(results: StageResult[]): void {
   const logPath = path.join(PROJECT_DIR, 'output', 'pipeline-log.json');
